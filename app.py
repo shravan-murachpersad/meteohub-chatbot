@@ -1,41 +1,48 @@
 # coding=utf-8
 
 from __future__ import print_function
-from future.standard_library import install_aliases
-install_aliases()
-
-from urllib.parse import urlparse, urlencode
-from urllib.request import urlopen, Request
-from urllib.error import HTTPError
-
-import json
-import os
-
-from flask import Flask
-from flask import request
 from flask import make_response
+from flask import request
+from flask import Flask
+import os
+import json
+from urllib.error import HTTPError
+from urllib.request import urlopen, Request
+from urllib.parse import urlparse, urlencode
+from future.standard_library import install_aliases
+from apscheduler.schedulers.blocking import BlockingScheduler
+
+install_aliases()
 
 # Flask app should start in global layout
 app = Flask(__name__)
-
+agent = ""
+platform = ""
 
 @app.route('/webhook', methods=['POST'])
 def webhook():
-    req = request.get_json(silent=True, force=True)
+    botRequest = request.get_json(silent=True, force=True)
 
-    print("Request:")
-    # print(json.dumps(req, indent=4))
-
-    res = processRequest(req)
+    agent = botRequest.get("session").split("/")[1]
+    platform = botRequest.get("originalDetectIntentRequest").get("source").upper()
+    
+    res = processRequest(botRequest)
     res = json.dumps(res, indent=4)
 
     response = make_response(res)
     response.headers['Content-Type'] = 'application/json'
+
     return response
 
+@app.route('/ping', methods=['GET'])
+def ping():
+    return '', 200
 
 def processRequest(req):
-    if req.get("result").get("action") == "weather":
+    if req.get("queryResult").get("action") == "subscribe":
+        return newSubscription(req)
+
+    if req.get("queryResult").get("action") == "weather":
         result = req.get("result")
         parameters = result.get("parameters")
 
@@ -45,19 +52,19 @@ def processRequest(req):
         if location is None:
             return None
 
-        params = { "location":location }
+        params = {"location": location}
 
         if datetime is not None:
             params["datetime"] = datetime
 
-        httpRequest = "http://meteohub.projexel.info/api/weatherforecast?" + urlencode(params)
+        httpRequest = "http://meteohub.projexel.info/api/weatherforecast?" + \
+            urlencode(params)
 
         result = urlopen(httpRequest).read()
 
         data = weatherResponse(json.loads(result))
 
         return data
-
 
 def weatherResponse(data):
     location = data.get("location")
@@ -102,8 +109,57 @@ def weatherResponse(data):
             "source": "meteohub"
         }
 
+def newSubscription(req):
+    subscriberId = req.get("originalDetectIntentRequest").get("payload").get("data").get("sender").get("id")
 
+    httpRequest = "http://localhost:8080/meteohub.svc/checkSubscription?subscriberId=" + subscriberId
 
+    try:
+        result = urlopen(httpRequest).read()
+
+        cardData = {
+            'title': "You are already subscribe with MCM.",
+            'subtitle': "You can unsubscribe anytime by sending UNSUBSCRIBE.",
+            'image_url': "https://blog.vantagecircle.com/content/images/size/w730/2019/09/welcome.png"
+        }
+
+        return GenerateCard(cardData);
+    except HTTPError as e:
+        if e.code == 404:
+            subscriberData = {
+                "subscriberId": subscriberId,
+                "platform": platform,
+                "status": "ACTIVE",
+                "agent": agent
+            }
+
+            subscriberData = json.dumps(subscriberData)
+            subscriberData = str(subscriberData)
+            subscriberData = subscriberData.encode('utf-8')
+
+            httpRequest = "http://localhost:8080/meteohub.svc/subscribe"
+
+            try:
+                headers = {'Content-type': 'application/json'}
+
+                newSubscriptionReq = Request(httpRequest, data=subscriberData, headers=headers)
+                newSubscriptionRes = urlopen(newSubscriptionReq)
+
+                cardData = {
+                    'title': "Thanks for subscribing with MCM.",
+                    'subtitle': "You will be the first to receive weather alerts on your mobile. Stay tuned.",
+                    'image_url': "https://blog.vantagecircle.com/content/images/size/w730/2019/09/welcome.png"
+                }
+
+                return GenerateCard(cardData);
+            except Exception as f:
+                cardData = {
+                    'title': "Failed to subscribe.",
+                    'subtitle': "An error has occured. Please try again.",
+                    'image_url': "http://www.samsungsfour.com/images/exclamation.png"
+                }
+
+                return GenerateCard(cardData);
 
 def GenerateCard(data):
     title = data.get("title")
@@ -131,7 +187,6 @@ def GenerateCard(data):
             }
         }
     }
-
 
 if __name__ == '__main__':
     port = int(os.getenv('PORT', 5000))
