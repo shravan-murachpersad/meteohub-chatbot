@@ -17,11 +17,13 @@ install_aliases()
 app = Flask(__name__)
 agent = ""
 platform = ""
-api="http://rest.meteohub.org:8083/meteohub.svc/"
+api="http://rest.meteohub.org:8083/meteohub.svc"
 
 @app.route('/webhook', methods=['POST'])
 def webhook():
     botRequest = request.get_json(silent=True, force=True)
+
+    global agent, platform
 
     agent = botRequest.get("session").split("/")[1]
     platform = botRequest.get("originalDetectIntentRequest").get("source").upper()
@@ -67,6 +69,8 @@ def processRequest(req):
         return data
 
 def weatherResponse(data):
+    global agent,platform
+
     location = data.get("location")
     forecast = data.get("forecast")
     current_conditions = data.get('current_conditions')
@@ -110,6 +114,8 @@ def weatherResponse(data):
         }
 
 def newSubscription(req):
+    global agent,platform
+
     subscriberId = req.get("originalDetectIntentRequest").get("payload").get("data").get("sender").get("id")
 
     httpRequest = api + "/checkSubscription?subscriberId=" + subscriberId
