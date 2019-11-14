@@ -10,7 +10,6 @@ from urllib.error import HTTPError
 from urllib.request import urlopen, Request
 from urllib.parse import urlparse, urlencode
 from future.standard_library import install_aliases
-from apscheduler.schedulers.blocking import BlockingScheduler
 
 install_aliases()
 
