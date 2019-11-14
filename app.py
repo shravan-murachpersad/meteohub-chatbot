@@ -18,6 +18,7 @@ install_aliases()
 app = Flask(__name__)
 agent = ""
 platform = ""
+api="http://rest.meteohub.org:8083/meteohub.svc/"
 
 @app.route('/webhook', methods=['POST'])
 def webhook():
@@ -112,7 +113,7 @@ def weatherResponse(data):
 def newSubscription(req):
     subscriberId = req.get("originalDetectIntentRequest").get("payload").get("data").get("sender").get("id")
 
-    httpRequest = "http://localhost:8080/meteohub.svc/checkSubscription?subscriberId=" + subscriberId
+    httpRequest = api + "/checkSubscription?subscriberId=" + subscriberId
 
     try:
         result = urlopen(httpRequest).read()
@@ -137,7 +138,7 @@ def newSubscription(req):
             subscriberData = str(subscriberData)
             subscriberData = subscriberData.encode('utf-8')
 
-            httpRequest = "http://localhost:8080/meteohub.svc/subscribe"
+            httpRequest = api + "/subscribe"
 
             try:
                 headers = {'Content-type': 'application/json'}
