@@ -123,7 +123,7 @@ def newSubscription(req):
     try:
         result = urlopen(httpRequest).read()
 
-        if(platform == "FACEBOOK"){
+        if platform == "FACEBOOK":
             cardData = {
                 'title': "You are already subscribe with MCM.",
                 'subtitle': "You can unsubscribe anytime by sending UNSUBSCRIBE.",
@@ -134,7 +134,6 @@ def newSubscription(req):
                 "data": GenerateCard(cardData),
                 "source": "meteohub"
             }
-        }
     except HTTPError as e:
         if e.code == 404:
             subscriberData = {
@@ -156,7 +155,7 @@ def newSubscription(req):
                 newSubscriptionReq = Request(httpRequest, data=subscriberData, headers=headers)
                 newSubscriptionRes = urlopen(newSubscriptionReq)
 
-                if(platform == "FACEBOOK"){
+                if platform == "FACEBOOK":
                     cardData = {
                         'title': "Thanks for subscribing with MCM.",
                         'subtitle': "You will be the first to receive weather alerts on your mobile. Stay tuned.",
@@ -167,10 +166,8 @@ def newSubscription(req):
                         "data": GenerateCard(cardData),
                         "source": "meteohub"
                     }
-                }
             except Exception as f:
-                if(platform == "FACEBOOK"){
-                    
+                if platform == "FACEBOOK":                    
                     cardData = {
                         'title': "Failed to subscribe.",
                         'subtitle': "An error has occured. Please try again.",
@@ -181,7 +178,6 @@ def newSubscription(req):
                         "data": GenerateCard(cardData),
                         "source": "meteohub"
                     }
-                }
 
 def GenerateCard(data):
     title = data.get("title")
