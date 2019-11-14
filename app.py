@@ -127,11 +127,18 @@ def newSubscription(req):
             cardData = {
                 'title': "You are already subscribe with MCM.",
                 'subtitle': "You can unsubscribe anytime by sending UNSUBSCRIBE.",
-                'image_url': "https://blog.vantagecircle.com/content/images/size/w730/2019/09/welcome.png"
+                'image_url': "https://blog.vantagecircle.com/content/images/size/w730/2019/09/welcome.png",
+                'buttons': [
+                    {
+                        "type": "postback",
+                        "title": "Unsubscribe",
+                        "payload": "Unsubscribe"
+                    }
+                ]
             }
 
             return {
-                "data": GenerateCard(cardData),
+                "payload": GenerateCard(cardData),
                 "source": "meteohub"
             }
     except HTTPError as e:
@@ -159,11 +166,18 @@ def newSubscription(req):
                     cardData = {
                         'title': "Thanks for subscribing with MCM.",
                         'subtitle': "You will be the first to receive weather alerts on your mobile. Stay tuned.",
-                        'image_url': "https://blog.vantagecircle.com/content/images/size/w730/2019/09/welcome.png"
+                        'image_url': "https://blog.vantagecircle.com/content/images/size/w730/2019/09/welcome.png",
+                        'buttons': [
+                            {
+                                "type": "postback",
+                                "title": "Unsubscribe",
+                                "payload": "Unsubscribe"
+                            }
+                        ]
                     }
 
                     return {
-                        "data": GenerateCard(cardData),
+                        "payload": GenerateCard(cardData),
                         "source": "meteohub"
                     }
             except Exception as f:
@@ -175,7 +189,7 @@ def newSubscription(req):
                     }
 
                     return {
-                        "data": GenerateCard(cardData),
+                        "payload": GenerateCard(cardData),
                         "source": "meteohub"
                     }
 
