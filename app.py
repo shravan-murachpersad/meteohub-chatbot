@@ -123,13 +123,18 @@ def newSubscription(req):
     try:
         result = urlopen(httpRequest).read()
 
-        cardData = {
-            'title': "You are already subscribe with MCM.",
-            'subtitle': "You can unsubscribe anytime by sending UNSUBSCRIBE.",
-            'image_url': "https://blog.vantagecircle.com/content/images/size/w730/2019/09/welcome.png"
-        }
+        if(platform == "FACEBOOK"){
+            cardData = {
+                'title': "You are already subscribe with MCM.",
+                'subtitle': "You can unsubscribe anytime by sending UNSUBSCRIBE.",
+                'image_url': "https://blog.vantagecircle.com/content/images/size/w730/2019/09/welcome.png"
+            }
 
-        return GenerateCard(cardData);
+            return {
+                "data": GenerateCard(cardData),
+                "source": "meteohub"
+            }
+        }
     except HTTPError as e:
         if e.code == 404:
             subscriberData = {
@@ -151,21 +156,32 @@ def newSubscription(req):
                 newSubscriptionReq = Request(httpRequest, data=subscriberData, headers=headers)
                 newSubscriptionRes = urlopen(newSubscriptionReq)
 
-                cardData = {
-                    'title': "Thanks for subscribing with MCM.",
-                    'subtitle': "You will be the first to receive weather alerts on your mobile. Stay tuned.",
-                    'image_url': "https://blog.vantagecircle.com/content/images/size/w730/2019/09/welcome.png"
-                }
+                if(platform == "FACEBOOK"){
+                    cardData = {
+                        'title': "Thanks for subscribing with MCM.",
+                        'subtitle': "You will be the first to receive weather alerts on your mobile. Stay tuned.",
+                        'image_url': "https://blog.vantagecircle.com/content/images/size/w730/2019/09/welcome.png"
+                    }
 
-                return GenerateCard(cardData);
+                    return {
+                        "data": GenerateCard(cardData),
+                        "source": "meteohub"
+                    }
+                }
             except Exception as f:
-                cardData = {
-                    'title': "Failed to subscribe.",
-                    'subtitle': "An error has occured. Please try again.",
-                    'image_url': "http://www.samsungsfour.com/images/exclamation.png"
-                }
+                if(platform == "FACEBOOK"){
+                    
+                    cardData = {
+                        'title': "Failed to subscribe.",
+                        'subtitle': "An error has occured. Please try again.",
+                        'image_url': "http://www.samsungsfour.com/images/exclamation.png"
+                    }
 
-                return GenerateCard(cardData);
+                    return {
+                        "data": GenerateCard(cardData),
+                        "source": "meteohub"
+                    }
+                }
 
 def GenerateCard(data):
     title = data.get("title")
