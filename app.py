@@ -17,7 +17,7 @@ install_aliases()
 app = Flask(__name__)
 agent = ""
 platform = ""
-api="http://rest.meteohub.org:8083/meteohub.svc"
+api="http://services.meteohub.org:8083/meteohub.svc"
 
 @app.route('/webhook', methods=['POST'])
 def webhook():
